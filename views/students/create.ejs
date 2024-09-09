@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Student</title>
+    <!-- Add Bootstrap for styling -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Create a New Student</h2>
+        <form action="/students/storeStudent" method="POST">
+            <div class="mb-3">
+                <label for="FullName" class="form-label">Full Name</label>
+                <input type="text" class="form-control" id="FullName" name="FullName" required maxlength="50">
+            </div>
+
+            <div class="mb-3">
+                <label for="YearOfBirth" class="form-label">Year of Birth</label>
+                <input type="number" class="form-control" id="YearOfBirth" name="YearOfBirth" required min="1900" max="2024">
+            </div>
+
+            <div class="mb-3">
+                <label for="Gender" class="form-label">Gender</label>
+                <select class="form-select" id="Gender" name="Gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="Occupation" class="form-label">Occupation (optional)</label>
+                <input type="text" class="form-control" id="Occupation" name="Occupation" maxlength="50">
+            </div>
+
+            <div class="mb-3">
+                <label for="EducationLevel" class="form-label">Education Level (optional)</label>
+                <input type="text" class="form-control" id="EducationLevel" name="EducationLevel" maxlength="50">
+            </div>
+
+            <div class="mb-3">
+                <label for="DateOfEnrollment" class="form-label">Date of Enrollment</label>
+                <input type="date" class="form-control" id="DateOfEnrollment" name="DateOfEnrollment" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="Status" class="form-label">Status</label>
+                <select class="form-select" id="Status" name="Status" required>
+                    <option value="active" selected>Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+
+            <!-- Group Section -->
+            <div class="mb-3">
+                <label for="existingGroup" class="form-label">Select Group (optional)</label>
+                <select class="form-select" id="existingGroup" name="existingGroup">
+                    <option value="">-- Select an Existing Group --</option>
+                    <% groups.forEach(function(group) { %>
+                        <option value="<%= group %>">
+                            <%= group %>
+                        </option>
+                        <% }); %>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="newGroup" class="form-label">Or Add New Group</label>
+                <input type="text" class="form-control" id="newGroup" name="newGroup" maxlength="50">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create Student</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

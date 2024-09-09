@@ -1,0 +1,177 @@
+<!-- views/studentsAttendance.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students List and Attendance</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Students List and Attendance</h2>
+
+        <!-- Filter by Group -->
+        <div class="mb-4">
+            <label for="groupFilter" class="form-label">Select Group</label>
+            <select id="groupFilter" class="form-select" onchange="applyFilters()">
+                <option value="">All Groups</option>
+                <% groups.forEach(group => { %>
+                    <option value="<%= group %>">
+                        <%= group %>
+                    </option>
+                <% }) %>
+            </select>
+        </div>
+
+        <!-- Filter by Status -->
+        <div class="mb-4">
+            <label for="statusFilter" class="form-label">Select Status</label>
+            <select id="statusFilter" class="form-select" onchange="applyFilters()">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+
+        <!-- Search by Name -->
+        <div class="mb-4">
+            <label for="searchInput" class="form-label">Search Student by Name</label>
+            <input type="text" id="searchInput" class="form-control" placeholder="Search by name..." oninput="applyFilters()">
+        </div>
+
+        <!-- Attendance Form -->
+        <form action="/students/attendance/submit" method="POST">
+            <!-- Student Table -->
+            <table class="table table-bordered table-striped mt-4">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Full Name</th>
+                        <th>Age</th>
+                        <th>Attendance</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                    <% if (students && students.length > 0) { %>
+                        <% students.forEach(student => { %>
+                            <tr data-group="<%= student.Group %>" data-status="<%= student.Status %>">
+                                <td>
+                                    <%= student.StudentID %>
+                                </td>
+                                <td>
+                                    <%= student.FullName %>
+                                </td>
+                                <td>
+                                    <%= student.Age %>
+                                </td>
+                                <td>
+                                    <input type="checkbox" name="attendance[<%= student.StudentID %>]" value="present">
+                                </td>
+                                <td>
+                                    <a href="/students/<%= student.StudentID %>/edit" class="btn btn-sm btn-warning">Edit</a>
+                                    <a href="/students/<%= student.StudentID %>" class="btn btn-sm btn-info">View</a>
+                                    <form action="/students/<%= student.StudentID %>?_method=DELETE" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center">No students found.</td>
+                                    </tr>
+                                    <% } %>
+                </tbody>
+            </table>
+
+            <button type="submit" class="btn btn-primary mt-3">Submit Attendance</button>
+        </form>
+
+        <!-- Pagination Controls -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item">
+                    <button class="page-link" id="prevPage" onclick="changePage(-1)">Previous</button>
+                </li>
+                <li class="page-item">
+                    <span class="page-link" id="pageDisplay">1</span>
+                </li>
+                <li class="page-item">
+                    <button class="page-link" id="nextPage" onclick="changePage(1)">Next</button>
+                </li>
+            </ul>
+        </nav>
+
+        <a href="/students/create" class="btn btn-primary mt-3">Add New Student</a>
+    </div>
+
+    <!-- JavaScript for Filters and Pagination -->
+    <script>
+        let currentPage = 1;
+        const studentsPerPage = 10;
+
+        function applyFilters() {
+            const group = document.getElementById('groupFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const rows = document.querySelectorAll('#studentTableBody tr');
+
+            let visibleRows = [];
+
+            rows.forEach(row => {
+                const rowGroup = row.getAttribute('data-group');
+                const rowStatus = row.getAttribute('data-status');
+                const rowName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+
+                const groupMatch = group === '' || rowGroup === group;
+                const statusMatch = status === '' || rowStatus === status;
+                const searchMatch = search === '' || rowName.includes(search);
+
+                if (groupMatch && statusMatch && searchMatch) {
+                    row.style.display = '';
+                    visibleRows.push(row);
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            paginate(visibleRows);
+        }
+
+        function paginate(rows) {
+            const totalPages = Math.ceil(rows.length / studentsPerPage);
+            const start = (currentPage - 1) * studentsPerPage;
+            const end = start + studentsPerPage;
+
+            rows.forEach((row, index) => {
+                if (index >= start && index < end) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            document.getElementById('pageDisplay').textContent = currentPage;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        function changePage(direction) {
+            currentPage += direction;
+            applyFilters();
+        }
+
+        window.onload = applyFilters; // Apply filters on page load
+    </script>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

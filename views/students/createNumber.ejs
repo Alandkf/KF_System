@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Student Number</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h2>Add Phone Number for Student</h2>
+        <form action="/students/<%= student.StudentID %>/storeNumber" method="POST">
+            <div class="mb-3">
+                <label for="numberType" class="form-label">Number Type</label>
+                <select class="form-select" id="numberType" name="numberType" required>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="primary">Primary</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="Number" class="form-label">Number</label>
+                <input type="text" class="form-control" id="Number" name="Number" required maxlength="15">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save Phone Number</button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
