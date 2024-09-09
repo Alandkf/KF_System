@@ -26,6 +26,7 @@ router.get('/', studentController.getAllStudents);
 // Create a new student
 router.get('/create', studentController.createStudent);
 router.post('/storeStudent', studentController.storeStudent);
+router.get('/:studentID', studentController.showStudent);
 
 // Create related entities (Number, Note, Weightlog, Doc)
 router.get('/:studentID/createNumber', studentController.createNumber);
@@ -39,8 +40,8 @@ router.post('/:studentID/storeWeightlog', studentController.storeWeightlog);
 router.post('/:studentID/storeDoc', studentController.storeDoc);
 
 // Get, Update, and Delete a student
-router.get('/:id', studentController.getStudentById);
-router.put('/:id', studentController.updateStudent);
-router.delete('/:id', studentController.deleteStudent);
+// router.get('/:id', studentController.getStudentById);
+// router.put('/:id', studentController.updateStudent);
+// router.delete('/:id', studentController.deleteStudent);
 
 module.exports = router;

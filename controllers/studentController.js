@@ -116,7 +116,7 @@ exports.storeStudent = async(req, res) => {
 
         console.log("the current student is: " + newStudent);
         console.log("the current student id is: " + newStudent.StudentID);
-        res.redirect(`/students/${newStudent.StudentID}/createNumber`);
+        res.redirect(`/students/${newStudent.StudentID}`);
     } catch (error) {
         console.error("Error storing student:", error);
         res.status(500).json({ error: 'An error occurred while storing the student.' });
@@ -141,7 +141,7 @@ exports.storeNumber = async(req, res) => {
         });
 
         console.log("the current student id is: " + studentId);
-        res.redirect(`/students/${studentId}/createNote`);
+        res.redirect(`/students/${studentId}`);
     } catch (error) {
         console.error("Error saving number:", error);
         res.status(500).json({ message: "An error occurred while saving the number" });
@@ -161,7 +161,7 @@ exports.storeNote = async(req, res) => {
             Note: Note
         });
 
-        res.redirect(`/students/${studentId}/createWeightlog`);
+        res.redirect(`/students/${studentId}`);
     } catch (error) {
         console.error("Error saving note:", error);
         res.status(500).json({ message: "An error occurred while saving the note" });
@@ -185,7 +185,7 @@ exports.storeWeightlog = async(req, res) => {
             Date: Date
         });
 
-        res.redirect(`/students/${studentId}/createDoc`);
+        res.redirect(`/students/${studentId}`);
     } catch (error) {
         console.error("Error saving weight log:", error);
         res.status(500).json({ message: "An error occurred while saving the weight log" });
@@ -207,7 +207,7 @@ exports.storeDoc = async(req, res) => {
             DocPath: DocPath
         });
 
-        res.redirect('/students/');
+        res.redirect('/students/' + studentId);
     } catch (error) {
         console.error("Error saving document:", error);
         res.status(500).json({ message: "An error occurred while saving the document" });
@@ -215,78 +215,78 @@ exports.storeDoc = async(req, res) => {
 };
 
 // Get a student by ID
-exports.getStudentById = async(req, res) => {
-    try {
-        const student = await Student.findByPk(req.params.id);
+// exports.getStudentById = async(req, res) => {
+//     try {
+//         const student = await Student.findByPk(req.params.id);
 
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found.' });
-        }
+//         if (!student) {
+//             return res.status(404).json({ error: 'Student not found.' });
+//         }
 
-        res.status(200).json(student);
-    } catch (error) {
-        console.error('Error fetching student:', error);
-        res.status(500).json({ error: 'An error occurred while fetching the student.' });
-    }
-};
+//         res.status(200).json(student);
+//     } catch (error) {
+//         console.error('Error fetching student:', error);
+//         res.status(500).json({ error: 'An error occurred while fetching the student.' });
+//     }
+// };
 
 // Update a student by ID
-exports.updateStudent = async(req, res) => {
-    try {
-        const { id } = req.params;
-        const {
-            FullName,
-            YearOfBirth,
-            Gender,
-            Occupation,
-            EducationLevel,
-            DateOfEnrollment,
-            ProfilePicturePath,
-            PersonalDocumentPath,
-            Status,
-            Group
-        } = req.body;
+// exports.updateStudent = async(req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const {
+//             FullName,
+//             YearOfBirth,
+//             Gender,
+//             Occupation,
+//             EducationLevel,
+//             DateOfEnrollment,
+//             ProfilePicturePath,
+//             PersonalDocumentPath,
+//             Status,
+//             Group
+//         } = req.body;
 
-        const student = await Student.findByPk(id);
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found.' });
-        }
+//         const student = await Student.findByPk(id);
+//         if (!student) {
+//             return res.status(404).json({ error: 'Student not found.' });
+//         }
 
-        await student.update({
-            FullName,
-            YearOfBirth,
-            Gender,
-            Occupation,
-            EducationLevel,
-            DateOfEnrollment,
-            ProfilePicturePath,
-            PersonalDocumentPath,
-            Status,
-            Group
-        });
+//         await student.update({
+//             FullName,
+//             YearOfBirth,
+//             Gender,
+//             Occupation,
+//             EducationLevel,
+//             DateOfEnrollment,
+//             ProfilePicturePath,
+//             PersonalDocumentPath,
+//             Status,
+//             Group
+//         });
 
-        res.status(200).json(student);
-    } catch (error) {
-        console.error('Error updating student:', error);
-        res.status(500).json({ error: 'An error occurred while updating the student.' });
-    }
-};
+//         res.status(200).json(student);
+//     } catch (error) {
+//         console.error('Error updating student:', error);
+//         res.status(500).json({ error: 'An error occurred while updating the student.' });
+//     }
+// };
 
 // Delete a student by ID
-exports.deleteStudent = async(req, res) => {
-    try {
-        const student = await Student.findByPk(req.params.id);
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found.' });
-        }
+// exports.deleteStudent = async(req, res) => {
+//     try {
+//         const student = await Student.findByPk(req.params.id);
+//         if (!student) {
+//             return res.status(404).json({ error: 'Student not found.' });
+//         }
 
-        await student.destroy();
-        res.status(204).json();
-    } catch (error) {
-        console.error('Error deleting student:', error);
-        res.status(500).json({ error: 'An error occurred while deleting the student.' });
-    }
-};
+//         await student.destroy();
+//         res.status(204).json();
+//     } catch (error) {
+//         console.error('Error deleting student:', error);
+//         res.status(500).json({ error: 'An error occurred while deleting the student.' });
+//     }
+// };
 
 // ==================== Attendance Methods ==================== //
 
@@ -341,5 +341,32 @@ exports.submitAttendance = async(req, res) => {
 
 // Render Attendance Success Page
 exports.getAttendanceSuccess = (req, res) => {
-    res.render('attendanceSuccess'); // Ensure you have an EJS view named 'attendanceSuccess.ejs'
+    res.send('attendanceSuccess'); // Ensure you have an EJS view named 'attendanceSuccess.ejs'
+};
+
+exports.showStudent = async(req, res) => {
+    try {
+        const studentID = req.params.studentID;
+
+        // Find student and include related data
+        const student = await Student.findByPk(studentID, {
+            include: [
+                { model: StudentDoc, as: 'StudentDocs' },
+                { model: StudentNote, as: 'StudentNotes' },
+                { model: StudentNumber, as: 'StudentNumbers' },
+                { model: StudentWeightlog, as: 'WeightLogs' },
+            ]
+        });
+
+        if (!student) {
+            return res.status(404).json({ error: 'Student not found.' });
+        }
+        console.log("the student is:");
+        console.log(student);
+
+        res.render('students/show', { student });
+    } catch (error) {
+        console.error('Error fetching student details:', error);
+        res.status(500).json({ error: 'An error occurred while fetching student details.' });
+    }
 };
