@@ -6,7 +6,8 @@ const Payment = sequelize.define('Payment', {
     PaymentID: { 
         type: DataTypes.INTEGER, 
         primaryKey: true, 
-        autoIncrement: true 
+        autoIncrement: true,
+        UNSIGNED: true
     },
     StudentID: { 
         type: DataTypes.INTEGER, 
@@ -16,19 +17,29 @@ const Payment = sequelize.define('Payment', {
         } 
     },
     PaymentDate: { 
-        type: DataTypes.DATE 
+        type: DataTypes.DATEONLY
     },
     AmountPaid: { 
-        type: DataTypes.FLOAT 
+        type: DataTypes.FLOAT,
+        UNSIGNED: true,
+        allowNull: false
     },
-    month: { 
-        type: DataTypes.STRING 
-    },
-    year: { 
-        type: DataTypes.INTEGER 
+month: { 
+    type: DataTypes.TINYINT,
+    allowNull: false,
+    validate: {
+        min: 1,
+        max: 12
     }
+},
+year: { 
+    type: DataTypes.SMALLINT,
+    allowNull: false
+},
 }, {
     timestamps: false
 });
+console.log("====================================");
+console.log("here is payment model and exported");
 
 module.exports = Payment;

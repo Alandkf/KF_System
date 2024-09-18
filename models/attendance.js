@@ -12,7 +12,7 @@ const Attendance = sequelize.define('Attendance', {
         type: DataTypes.INTEGER,
         references: { model: Student, key: 'StudentID' }
     },
-    Date: {
+    AttendanceDate: {
         type: DataTypes.DATE
     },
     AttendanceStatus: {
@@ -21,5 +21,8 @@ const Attendance = sequelize.define('Attendance', {
 }, {
     timestamps: false
 });
+console.log("====================================");
+console.log("here is attendance model and exported");
+
 
 module.exports = Attendance;

@@ -28,7 +28,9 @@ const StudentDoc = sequelize.define('StudentDoc', {
         allowNull: false
     }
 }, {
-    timestamps: true  // Timestamps added
+    timestamps: false  // Timestamps added
 });
+console.log("====================================");
+console.log("here is student doc model and exported");
 
 module.exports = StudentDoc;

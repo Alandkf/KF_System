@@ -21,5 +21,7 @@ const AttendanceNotes = sequelize.define('AttendanceNotes', {
 }, {
   timestamps: false
 });
+console.log("====================================");
+console.log("here is attendance note model and exported");
 
 module.exports = AttendanceNotes;

@@ -117,11 +117,12 @@
 </head>
 
 <body>
+    <%- include('../includes/sidebar.ejs') %>
     <div class="container">
         <!-- Page Header -->
         <div class="page-header">
             <h1>Student Details</h1>
-            <a href="/students" class="btn btn-outline-secondary">Back to Student List</a>
+            <a href="/attendance/today" class="btn btn-outline-secondary">Back to Student List</a>
         </div>
 
         <!-- Student Information -->
@@ -139,6 +140,10 @@
                         <p class="card-text"><strong>Occupation:</strong>
                             <%= student.Occupation %>
                         </p>
+                        <p class="card-text">
+                            <strong> Address: </strong>
+                            <%= student.Address %>
+                        </p>
                     </div>
                     <div class="col-md-6">
                         <p class="card-text"><strong>Education Level:</strong>
@@ -148,7 +153,7 @@
                             <%= student.DateOfEnrollment %>
                         </p>
                         <p class="card-text"><strong>Group:</strong>
-                            <%= student.Group %>
+                            <%= student.GroupName %>
                         </p>
                         <p class="card-text"><strong>Status:</strong>
                             <%= student.Status %>
@@ -174,7 +179,7 @@
                     <% } else { %>
                         <p class="no-data">No documents available.</p>
                         <% } %>
-                            <form action="/students/<%= student.StudentID %>/storeDoc" method="POST" enctype="multipart/form-data" class="mt-3">
+                            <form action="/students/<%= student.StudentID %>/storeDoc" method="POST" class="mt-3">
                                 <div class="mb-3">
                                     <label for="DocName" class="form-label">Document Name</label>
                                     <input type="text" class="form-control" id="DocName" name="DocName" required maxlength="50">
@@ -196,6 +201,8 @@
                     <ul class="list-group">
                         <% student.StudentNotes.forEach(note => { %>
                             <li class="list-group-item">
+                                <%= note.NoteDate %>
+                                <br>
                                 <%= note.Note %>
                             </li>
                             <% }) %>
@@ -206,6 +213,7 @@
                             <form action="/students/<%= student.StudentID %>/storeNote" method="POST" class="mt-3">
                                 <div class="mb-3">
                                     <label for="Note" class="form-label">Add a Note</label>
+                                    <input type="date" name="NoteDate" id="NoteDate" required>
                                     <textarea class="form-control" id="Note" name="Note" rows="3" required></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Save Note</button>
@@ -233,14 +241,14 @@
                                 <div class="mb-3">
                                     <label for="numberType" class="form-label">Number Type</label>
                                     <select class="form-select" id="numberType" name="numberType" required>
-                            <option value="home">Home</option>
-                            <option value="work">Work</option>
-                            <option value="primary">Primary</option>
-                        </select>
+                                        <option value="home">Home</option>
+                                        <option value="work">Work</option>
+                                        <option value="primary">Primary</option>
+                                    </select>
                                 </div>
                                 <div class="mb-3">
                                     <label for="Number" class="form-label">Number</label>
-                                    <input type="text" class="form-control" id="Number" name="Number" required maxlength="15">
+                                    <input type="text" class="form-control" id="Number" name="Number" required min="7" maxlength="15">
                                 </div>
                                 <button type="submit" class="btn btn-primary">Save Phone Number</button>
                             </form>
@@ -256,7 +264,7 @@
                         <% student.WeightLogs.forEach(log => { %>
                             <li class="list-group-item">
                                 <strong>Date:</strong>
-                                <%= log.Date %> - <strong>Weight:</strong>
+                                <%= log.WeightDate %> ==> <strong>Weight:</strong>
                                     <%= log.Weight %> kg
                             </li>
                             <% }) %>
@@ -267,7 +275,7 @@
                             <form action="/students/<%= student.StudentID %>/storeWeightLog" method="POST" class="mt-3">
                                 <div class="mb-3">
                                     <label for="Date" class="form-label">Date</label>
-                                    <input type="date" class="form-control" id="Date" name="Date" required>
+                                    <input type="date" class="form-control" id="WeightDate" name="WeightDate">
                                 </div>
                                 <div class="mb-3">
                                     <label for="Weight" class="form-label">Weight (kg)</label>
@@ -278,6 +286,8 @@
             </div>
         </div>
 
+        
+        
         <!-- Attendance History -->
         <h2 class="section-title">Attendance History</h2>
         <table class="table table-bordered">
@@ -285,28 +295,159 @@
                 <tr>
                     <th>Date</th>
                     <th>Status</th>
+                    <th>Note</th>
                 </tr>
             </thead>
             <tbody>
-                <% if (attendanceRecords.length > 0) { %>
-                    <% attendanceRecords.forEach(record => { %>
+                <% if (attendanceRecords.length> 0) { %>
+                    <% attendanceRecords.forEach(record=> { %>
                         <tr>
                             <td>
-                                <%= new Date(record.Date).toLocaleDateString() %>
+                                <%= new Date(record.AttendanceDate).toLocaleDateString() %>
                             </td>
                             <td>
                                 <%= record.AttendanceStatus %>
+                            </td>
+                            <td>
+                                <% for (let i=0; i < attendanceNoteRecords.length; i++) { if
+                                    (attendanceNoteRecords[i].dataValues.AttendanceID==record.AttendanceID) { %>
+                                    <%= attendanceNoteRecords[i].dataValues.Note %>
+                                        <% break; %> <!-- Stop looping once the match is found -->
+                                            <% } %>
+                                                <% } %>
                             </td>
                         </tr>
                         <% }) %>
                             <% } else { %>
                                 <tr>
-                                    <td colspan="2" class="no-data">No attendance records found.</td>
+                                    <td colspan="3" class="no-data">No attendance records found for this month.</td>
                                 </tr>
                                 <% } %>
             </tbody>
         </table>
+
+<!-- Pagination for Attendance History (Months) -->
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        <!-- Previous Year Button -->
+        <li class="page-item">
+            <a class="page-link" href="?month=<%= currentPage %>&year=<%= year - 1 %>" aria-label="Previous Year">
+                <span aria-hidden="true">&laquo; Year <%= year - 1 %></span>
+            </a>
+        </li>
+
+        <!-- Previous Month Button -->
+        <% if (currentPage> 1) { %>
+            <li class="page-item">
+                <a class="page-link" href="?month=<%= currentPage - 1 %>&year=<%= year %>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <% } %>
+
+                <!-- Loop through months 1 to 12 -->
+                <% for (let i=1; i <=12; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?month=<%= i %>&year=<%= year %>">
+                            <%= i %> <!-- Display month number -->
+                        </a>
+                    </li>
+                    <% } %>
+
+                        <!-- Next Month Button -->
+                        <% if (currentPage < 12) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="?month=<%= currentPage + 1 %>&year=<%= year %>"
+                                    aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <% } %>
+
+                                <!-- Next Year Button -->
+                                <li class="page-item">
+                                    <a class="page-link" href="?month=<%= currentPage %>&year=<%= year + 1 %>"
+                                        aria-label="Next Year">
+                                        <span aria-hidden="true">Year <%= year + 1 %> &raquo;</span>
+                                    </a>
+                                </li>
+    </ul>
+</nav>
+
+
+
+
+
+        <!-- Payment History -->
+        <h2 class="section-title">Payment History</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Payment For</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (paymentRecords.length> 0) { %>
+                    <% paymentRecords.forEach(record=> { %>
+                        <tr>
+                            <td>
+                                <%= new Date(record.PaymentDate).toLocaleDateString() %>
+                            </td>
+                            <td>
+                                <%= record.AmountPaid %>
+                            </td>
+                            <td>
+                                <%= record.month %> - <%= record.year %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                            <% } else { %>
+                                <tr>
+                                    <td colspan="3" class="no-data">No payment records found.</td>
+                                </tr>
+                                <% } %>
+            </tbody>
+        </table>
+        
+        <!-- Pagination Controls -->
+        <nav aria-label="Payment history pagination">
+            <ul class="pagination">
+                <% if (currentPage> 1) { %>
+                    <li class="page-item">
+                        <a class="page-link" href="?page=<%= currentPage - 1 %>">Previous</a>
+                    </li>
+                    <% } %>
+        
+                        <% for (let i=1; i <=totalPages; i++) { %>
+                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                <a class="page-link" href="?page=<%= i %>">
+                                    <%= i %>
+                                </a>
+                            </li>
+                            <% } %>
+        
+                                <% if (currentPage < totalPages) { %>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=<%= currentPage + 1 %>">Next</a>
+                                    </li>
+                                    <% } %>
+            </ul>
+        </nav>
+
+
     </div>
+
+    
+        
+
+
+
+
+    
+
+    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<style>
+    #MessageBox {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+</style>
+
+<body>
+    <%- include('../includes/sidebar.ejs') %>
+    
+    
+    <div class="container mt-5">
+        
+        <!-- Display success or error message -->
+   <div id="MessageBox" class="message-box">
+    <% if (!Message || Message === "") { %>
+        <div class="">
+            
+        </div>
+    <% } else if (Message === "Payment created successfully!" || Message === "Payment updated successfully!") { %>
+        <div id="Message" class="alert alert-success" role="alert">
+            <% console.log("so the Message is " + Message) %>
+            <%= Message %>
+        </div>
+    <% } else { %>
+        <div id="Message" class="alert alert-danger" role="alert">
+            <% console.log("so the Message is " + Message) %>
+            <%= Message %>
+        </div>
+    <% } %>
+</div>
+
+<script>
+// Hide the message box after 5 seconds
+setTimeout(function() {
+    var messageBox = document.getElementById('MessageBox');
+    if (messageBox) {
+        messageBox.style.display = 'none';
+    }
+}, 5000); // 5 seconds
+</script>
+
+            <h2>Payments List</h2>
+
+            <!-- Filter by Month, Year, and Category -->
+            <form method="GET" action="/payments" id="filterForm" class="row g-3">
+                <div class="col-md-4">
+                    <label for="monthFilter" class="form-label">Select Month</label>
+                    <select id="monthFilter" name="month" class="form-select">
+                        <option value="">All Months</option>
+                        <% for (let i=1; i <=12; i++) { %>
+                            <option value="<%= i %>" <%=selectedMonth==i ? 'selected' : '' %>>
+                                <%= new Date(0, i - 1).toLocaleString('en', { month: 'long' }) %>
+                                    <!-- Display month name -->
+                            </option>
+                            <% } %>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="yearFilter" class="form-label">Select Year</label>
+                    <select id="yearFilter" name="year" class="form-select">
+                        <option value="">All Years</option>
+                        <% const currentYear=new Date().getFullYear(); %>
+                            <% for (let y=currentYear; y>= currentYear - 5; y--) { %> <!-- Show the last 5 years -->
+                                <option value="<%= y %>" <%=selectedYear==y ? 'selected' : '' %>>
+                                    <%= y %>
+                                </option>
+                                <% } %>
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="categoryFilter" class="form-label">Select Group</label>
+                    <select id="categoryFilter" name="category" class="form-select">
+                        <option value="">All Groups</option>
+                        <% distinctGroups.forEach(group=> { %>
+                            <option value="<%= group.GroupName %>" <%=selectedCategory==group.GroupName ? 'selected'
+                                : '' %>>
+                                <%= group.GroupName %>
+                            </option>
+                            <% }) %>
+                    </select>
+                </div>
+            </form>
+
+            <!-- Payments Table -->
+            <table class="table table-bordered table-striped mt-4">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Student Name</th>
+                        <th>Payment Date</th>
+                        <th>Amount Paid</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (allStudents.length> 0) { %>
+                        <% allStudents.forEach((student, index)=> { %>
+                            <tr>
+                                <td>
+                                    <%= index + 1 %>
+                                </td> <!-- Serial Number -->
+                                <td>
+                                    <%= student.FullName %>
+                                </td> <!-- Student Name -->
+                                <td>
+                                    <form method="POST" action="/payments/save">
+                                        <input type="hidden" name="category" value="<%=student.GroupName%>">
+                                        <input type="hidden" name="StudentID" value="<%= student.StudentID %>">
+                                        <input type="date" name="PaymentDate" class="form-control"
+                                            value="<%= student.Payments && student.Payments.length > 0 ? new Date(student.Payments[0].PaymentDate).toISOString().split('T')[0] : '' %>"
+                                            placeholder="Enter Date">
+                                </td>
+                                <td>
+                                    <input type="number" id="AmountPaid" name="AmountPaid" class="form-control"
+                                        value="<%= student.Payments && student.Payments.length > 0 ? student.Payments[0].AmountPaid : '' %>"
+                                        placeholder="Enter Amount" required>
+                                </td>
+                                <td>
+                                    <input type="hidden" name="month" value="<%= selectedMonth %>">
+                                    <input type="hidden" name="year" value="<%= selectedYear %>">
+                                    <input type="hidden" name="CreateOrUpdate"
+                                        value="<%= student.Payments && student.Payments.length > 0 ? 'update' : 'create' %>">
+                                    <button type="submit" name="save" class="btn btn-success">Save</button>
+                                </td>
+                                </form>
+                            </tr>
+                            <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="5" class="text-center">No student data available for the selected
+                                            filters.</td>
+                                    </tr>
+                                    <% } %>
+                </tbody>
+            </table>
+                        
+
+        </div>
+
+        <!-- Bootstrap JS (Optional) -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+            // Function to check filter values and enable/disable inputs
+            function toggleInputs() {
+                const month = document.getElementById('monthFilter').value;
+                const year = document.getElementById('yearFilter').value;
+                const category = document.getElementById('categoryFilter').value;
+                const inputs = document.querySelectorAll('input[type="date"], input[type="number"]');
+                if (month && year && category) {
+                    inputs.forEach(input => input.disabled = false);
+                } else {
+                    inputs.forEach(input => input.disabled = true);
+                }
+            }
+
+            // Attach event listeners to filter elements
+            document.getElementById('monthFilter').addEventListener('change', () => {
+                toggleInputs();
+                document.getElementById('filterForm').submit();
+            });
+            document.getElementById('yearFilter').addEventListener('change', () => {
+                toggleInputs();
+                document.getElementById('filterForm').submit();
+            });
+            document.getElementById('categoryFilter').addEventListener('change', () => {
+                toggleInputs();
+                document.getElementById('filterForm').submit();
+            });
+            
+
+            // Initial check on page load
+            window.onload = toggleInputs;
+        </script>
+
+</body>
+
+</html>

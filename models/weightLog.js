@@ -18,7 +18,7 @@ const WeightLog = sequelize.define('WeightLog', {
         },
         UNSIGNED: true
     },
-    Date: {
+    WeightDate: {
         type: DataTypes.DATEONLY,
         allowNull: false,
         defaultValue: DataTypes.NOW,
@@ -29,7 +29,9 @@ const WeightLog = sequelize.define('WeightLog', {
         UNSIGNED: true,
     }
 }, {
-    timestamps: true  // Timestamps added
+    timestamps: false  // Timestamps added
 });
+console.log("====================================");
+console.log("here is weight log model and exported");
 
 module.exports = WeightLog;

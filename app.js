@@ -2,20 +2,21 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { sequelize } = require('./models');
-// const cityRoutes = require('./routes/cityRoutes');
-// const employeeRoutes = require('./routes/employeeRoutes');
-// const sectionRoutes = require('./routes/sectionRoutes');
-// const villageRoutes = require('./routes/villageRoutes');
-// const driverRoutes = require('./routes/driverRoutes');
-// const indexRoutes = require('./routes/indexRoutes');
+// routes
 const studentRoutes = require('./routes/studentRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+console.log("payment routes imported");
+
+
 // const cors = require('cors');
 const methodOverride = require('method-override');
-// require('dotenv').config();
+require('dotenv').config();
 const app = express();
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(methodOverride('_method'));
 app.use(methodOverride('_method', { methods: ['POST', 'GET'] }));
 app.use(express.static(path.join(__dirname, 'public')));
 // app.use(cors());
@@ -25,13 +26,9 @@ app.set('view engine', 'ejs');
 app.set('views', 'views');
 
 // Routes
-// app.use('/cities', cityRoutes);
-// app.use('/employees', employeeRoutes);
-// app.use('/sections', sectionRoutes);
-// app.use('/villages', villageRoutes);
-// app.use('/drivers', driverRoutes);
-// app.use('/', indexRoutes);
 app.use('/students', studentRoutes);
+app.use('/attendance', attendanceRoutes);
+app.use('/payments', paymentRoutes);
 
 app.get('/', (req, res) => {
     res.render('index');

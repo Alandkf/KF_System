@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Center elements in the table */
+        .table th,
+        .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        /* Add spacing between elements */
+        .container {
+            margin-top: 50px;
+        }
+
+        /* Improve table and form spacing on mobile */
+        @media (max-width: 768px) {
+            .table-responsive {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('../includes/sidebar.ejs') %>
+
+    <div class="container">
+            <h1 class="text-center mb-4">Attendance Records</h1>
+
+            <% if (allAttendance.length> 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Date</th>
+                                <th>Group Name</th>
+                                <th>Attendance Count</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% allAttendance.forEach(attendance=> { %>
+                                <tr>
+                                    <td>
+                                        <%= new Date(attendance.AttendanceDate).toLocaleString('en-US', {
+                                            year: 'numeric' , month: 'long' , day: 'numeric' , hour: '2-digit' ,
+                                            minute: '2-digit' }) %>
+                                    </td>
+                                    <td>
+                                        <%= attendance.dataValues.GroupName %>
+                                    </td>
+                                    <td>
+                                        <%= attendance.dataValues.presentCount %> /
+                                        <%= attendance.dataValues.attendanceCount %>
+                                    </td>
+                                    <td>
+                                        <a href="/attendance/<%= encodeURIComponent(attendance.AttendanceDate) %>"
+                                            class="btn btn-sm btn-info">
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination links -->
+                <!-- Pagination links -->
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+
+        <!-- Previous Year Button -->
+        <li class="page-item">
+            <a class="page-link" href="?month=<%= currentPage %>&year=<%= year - 1 %>" aria-label="Previous Year">
+                <span aria-hidden="true">&laquo; Year <%= year - 1 %></span>
+            </a>
+        </li>
+
+        <% if (currentPage> 1) { %>
+            <!-- Previous Month Button -->
+            <li class="page-item">
+                <a class="page-link" href="?month=<%= currentPage - 1 %>&year=<%= year %>" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <% } %>
+
+                <!-- Loop through months 1 to 12 -->
+                <% for (let i=1; i <=12; i++) { %>
+                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                        <a class="page-link" href="?month=<%= i %>&year=<%= year %>">
+                            <%= i %> <!-- Display month number -->
+                        </a>
+                    </li>
+                    <% } %>
+
+                        <% if (currentPage < 12) { %> <!-- Next button only shows if not on the last month -->
+                            <li class="page-item">
+                                <a class="page-link" href="?month=<%= currentPage + 1 %>&year=<%= year %>"
+                                    aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                            <% } %>
+
+                                <!-- Next Year Button -->
+                                <li class="page-item">
+                                    <a class="page-link" href="?month=<%= currentPage %>&year=<%= year + 1 %>"
+                                        aria-label="Next Year">
+                                        <span aria-hidden="true">Year <%= year + 1 %> &raquo;</span>
+                                    </a>
+                                </li>
+
+    </ul>
+</nav>
+
+                <% } else { %>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                    
+                            <!-- Previous Year Button -->
+                            <li class="page-item">
+                                <a class="page-link" href="?month=<%= currentPage %>&year=<%= year - 1 %>" aria-label="Previous Year">
+                                    <span aria-hidden="true">&laquo; Year <%= year - 1 %></span>
+                                </a>
+                            </li>
+                    
+                            <% if (currentPage> 1) { %>
+                                <!-- Previous Month Button -->
+                                <li class="page-item">
+                                    <a class="page-link" href="?month=<%= currentPage - 1 %>&year=<%= year %>" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <% } %>
+                    
+                                    <!-- Loop through months 1 to 12 -->
+                                    <% for (let i=1; i <=12; i++) { %>
+                                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                            <a class="page-link" href="?month=<%= i %>&year=<%= year %>">
+                                                <%= i %> <!-- Display month number -->
+                                            </a>
+                                        </li>
+                                        <% } %>
+                    
+                                            <% if (currentPage < 12) { %> <!-- Next button only shows if not on the last month -->
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?month=<%= currentPage + 1 %>&year=<%= year %>"
+                                                        aria-label="Next">
+                                                        <span aria-hidden="true">&raquo;</span>
+                                                    </a>
+                                                </li>
+                                                <% } %>
+                    
+                                                    <!-- Next Year Button -->
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?month=<%= currentPage %>&year=<%= year + 1 %>"
+                                                            aria-label="Next Year">
+                                                            <span aria-hidden="true">Year <%= year + 1 %> &raquo;</span>
+                                                        </a>
+                                                    </li>
+                    
+                        </ul>
+                    </nav>
+<% } %>
+
+                        <div class="text-center mt-4">
+                            <a href="/attendance/today?status=active" class="btn btn-primary">Back to Home</a>
+                        </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

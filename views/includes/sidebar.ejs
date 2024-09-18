@@ -1,0 +1,159 @@
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        background-color: #00af0c;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding-top: 20px;
+        width: 60px;
+        transition: width 0.3s, display 0.3s;
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        overflow-y: auto;
+        height: 100vh;
+        z-index: 1;
+    }
+
+    .sidebar.expanded {
+        width: 200px;
+    }
+
+    .sidebar .menu-item {
+        width: 100%;
+        padding: 10px;
+        text-align: left;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.3s;
+    }
+
+    .sidebar .menu-item:hover {
+        background-color: #555;
+    }
+
+    .sidebar .icon {
+        font-size: 18px;
+        margin-right: 10px;
+    }
+
+    .sidebar .text {
+        display: none;
+        font-size: 16px;
+    }
+
+    .sidebar.expanded .text {
+        display: inline;
+    }
+
+    /* Toggle button */
+    .toggle-btn {
+        font-size: 24px;
+        margin: 0 10px 20px;
+        cursor: pointer;
+    }
+
+    /* Main Content */
+    .main-content {
+        margin-left: 60px;
+        padding: 20px;
+        flex-grow: 1;
+        transition: margin-left 0.3s;
+        height: 100vh;
+        overflow-y: auto;
+    }
+
+    .sidebar.expanded~.main-content {
+        margin-left: 200px;
+    }
+
+    @media screen and (max-width: 768px) {
+        .sidebar {
+            display: none;
+        }
+
+        .sidebar.expanded {
+            display: block;
+            width: 200px;
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+    }
+
+    #menu-icon {
+        font-size: 24px;
+        margin: 0 10px 20px;
+        cursor: pointer;
+        color: red;
+        position: fixed;
+    }
+</style>
+
+<div id="menu-icon" onclick="toggleSidebar()">&#9776;</div>
+<div class="sidebar" id="sidebar">
+    <div class="toggle-btn" onclick="toggleSidebar()">&#9776;</div>
+    <div class="menu-item" onclick="location.href='/attendance/today?status=active'">
+        <span class="icon">&#x1F3E0;</span> <!-- Home icon -->
+        <span class="text">Today's Attendance</span>
+    </div>
+    <div class="menu-item" onclick="location.href='/attendance'">
+        <span class="icon">&#128179;</span> <!-- Payment icon -->
+        <span class="text">Payments</span>
+    </div>
+    <div class="menu-item" onclick="location.href='/students/create'">
+        <span class="icon">&#x1F464;</span> <!-- Gear icon -->
+        <span class="text">Add Student</span>
+    </div>
+    <div class="menu-item" onclick="location.href='/payments'">
+        <span class="icon">&#x1F4B0;</span> <!-- Money icon -->
+        <span class="text">Payments</span>
+    </div>
+</div>
+<script>
+
+    // Toggle the sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const menuIcon = document.getElementById('menu-icon');
+
+            if (window.innerWidth <= 768) {
+                sidebar.classList.toggle('expanded');
+                sidebar.style.display = sidebar.style.display === 'block' ? 'none' : 'block';
+            } else {
+                sidebar.classList.toggle('expanded');
+            }
+        }
+
+        // Hide the sidebar when clicking outside of it
+        document.querySelector('body').addEventListener('click', (event) => {
+            const sidebar = document.getElementById('sidebar');
+            const menuIcon = document.getElementById('menu-icon');
+
+            // Close the sidebar when clicked outside the sidebar and the icon
+            if (!sidebar.contains(event.target) && event.target !== menuIcon) {
+                sidebar.classList.remove('expanded');
+                if (window.innerWidth <= 768) {
+                    sidebar.style.display = 'none';
+                }
+            }
+        });
+
+        // Prevent closing when clicking inside the sidebar
+        document.getElementById('sidebar').addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+    </script>

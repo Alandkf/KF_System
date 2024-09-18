@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const Attendance = require('./attendance');
 
 const Blog = sequelize.define('Blog', {
     BlogID: {
@@ -9,24 +8,18 @@ const Blog = sequelize.define('Blog', {
         autoIncrement: true,
         UNSIGNED: true
     },
-    Title: {
-        type: DataTypes.STRING(25),
-        allowNull: false,
-
-    },
     Content: {
         type: DataTypes.TEXT,
         allowNull: false
     },
-    AttendanceID: {
-        type: DataTypes.INTEGER,
-        references: {
-            model: Attendance,
-            key: 'AttendanceID'
-        }
-    }
+    BlogDate: {
+        type: DataTypes.DATE,
+        allowNull: false
+    },
 }, {
     timestamps: false
 });
+console.log("====================================");
+console.log("here is blog model and exported");
 
 module.exports = Blog;

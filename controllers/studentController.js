@@ -4,58 +4,15 @@ const StudentNote = require('../models/studentNote');
 const StudentWeightlog = require('../models/weightLog');
 const StudentDoc = require('../models/studentDoc');
 const Attendance = require('../models/attendance'); // Import Attendance model
+const AttendanceNote = require('../models/attendanceNote'); // Import AttendanceNote model
+const Payment = require('../models/payment'); // Import Payment model
 const { Op } = require('sequelize');
-
-// Get all students
-exports.getAllStudents = async(req, res) => {
-    try {
-        // Retrieve filter criteria from the query parameters
-        const { group, status } = req.query;
-
-        // Fetch all groups for the dropdown
-        const allGroups = await Student.findAll({
-            attributes: ['Group'],
-            group: ['Group'] // Ensure we get distinct groups
-        });
-        const groups = allGroups.map(group => group.Group);
-
-        // Build the query with conditions for filtering students
-        const whereConditions = {};
-        if (group && group !== '') {
-            whereConditions.Group = group;
-        }
-        if (status && status !== '') {
-            whereConditions.Status = status;
-        }
-
-        // Fetch filtered students from the database
-        const students = await Student.findAll({
-            where: whereConditions
-        });
-
-        // Calculate age based on the year of birth
-        const currentYear = new Date().getFullYear();
-        students.forEach(student => {
-            student.Age = currentYear - student.YearOfBirth;
-        });
-
-        // Render the view with the filtered students and groups
-        res.render('students', { students, groups, currentGroup: group || '', currentStatus: status || '' });
-    } catch (error) {
-        console.error('Error fetching students:', error);
-        res.status(500).json({ error: 'An error occurred while fetching students.' });
-    }
-};
-
-
-
-
 
 // Create a new student form
 exports.createStudent = async(req, res) => {
     try {
         const students = await Student.findAll();
-        const groups = [...new Set(students.map(student => student.Group))];
+        const groups = [...new Set(students.map(student => student.GroupName))];
         console.log("here the values that goes with the groups");
         console.log("-->" + groups);
         res.render('students/create', { groups });
@@ -65,68 +22,32 @@ exports.createStudent = async(req, res) => {
     }
 };
 
-// Create related entities (Number, Note, Weightlog, Doc)
-exports.createNumber = async(req, res) => {
+exports.changeStatus = async (req, res) => {
     try {
-        const student = await Student.findByPk(req.params.studentID);
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found.' });
-        }
-        res.render('students/createNumber', { student });
+        console.log("called from the backend");
+        
+        const studentID = req.params.studentID;
+        const { status } = req.body;
+        // Update student status
+        await Student.update({ Status: status }, { where: { StudentID: studentID } });
+        res.send('success');
     } catch (error) {
-        console.error("Error rendering createNumber form:", error);
-        res.status(500).json({ error: 'An error occurred while rendering the createNumber form.' });
+        console.error('Error updating student status:', error);
+        res.status(500).json({ error: 'An error occurred while updating student status.' });
     }
-};
+}
 
-exports.createNote = async(req, res) => {
-    try {
-        const student = await Student.findByPk(req.params.studentID);
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found.' });
-        }
-        res.render('students/createNote', { student });
-    } catch (error) {
-        console.error("Error rendering createNote form:", error);
-        res.status(500).json({ error: 'An error occurred while rendering the createNote form.' });
-    }
-};
 
-exports.createWeightlog = async(req, res) => {
-    try {
-        const student = await Student.findByPk(req.params.studentID);
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found.' });
-        }
-        res.render('students/createWeightlog', { student });
-    } catch (error) {
-        console.error("Error rendering createWeightlog form:", error);
-        res.status(500).json({ error: 'An error occurred while rendering the createWeightlog form.' });
-    }
-};
-
-exports.createDoc = async(req, res) => {
-    try {
-        const student = await Student.findByPk(req.params.studentID);
-        if (!student) {
-            return res.status(404).json({ error: 'Student not found.' });
-        }
-        res.render('students/createDoc', { student });
-    } catch (error) {
-        console.error("Error rendering createDoc form:", error);
-        res.status(500).json({ error: 'An error occurred while rendering the createDoc form.' });
-    }
-};
 
 // Store created student and related entities
-exports.storeStudent = async(req, res) => {
+exports.storeStudent = async (req, res) => {
     try {
-        const { FullName, YearOfBirth, Gender, Occupation, EducationLevel, DateOfEnrollment, Status, existingGroup, newGroup } = req.body;
+        const { FullName, YearOfBirth, Gender, Occupation, EducationLevel, DateOfEnrollment, Status, existingGroup, newGroup, Address } = req.body;
 
         // Use the existing group if selected, otherwise use the new group
         const group = existingGroup ? existingGroup : newGroup;
 
-        // Create the student
+        // Create the student with the new address field
         const newStudent = await Student.create({
             FullName,
             YearOfBirth,
@@ -135,17 +56,21 @@ exports.storeStudent = async(req, res) => {
             EducationLevel,
             DateOfEnrollment,
             Status,
-            Group: group // Save the group
+            GroupName: group, // Save the group
+            Address // Save the address
         });
 
         console.log("the current student is: " + newStudent);
         console.log("the current student id is: " + newStudent.StudentID);
+
+        // Redirect or send response after successful creation
         res.redirect(`/students/${newStudent.StudentID}`);
     } catch (error) {
         console.error("Error storing student:", error);
         res.status(500).json({ error: 'An error occurred while storing the student.' });
     }
 };
+
 
 exports.storeNumber = async(req, res) => {
     try {
@@ -165,8 +90,7 @@ exports.storeNumber = async(req, res) => {
         });
 
         console.log("the current student id is: " + studentId);
-        res.redirect(` / students / $ { studentId }
-                    `);
+        res.redirect(`/students/${ studentId }`);
     } catch (error) {
         console.error("Error saving number:", error);
         res.status(500).json({ message: "An error occurred while saving the number" });
@@ -177,16 +101,18 @@ exports.storeNote = async(req, res) => {
     try {
         const studentId = req.params.studentID;
         const { Note } = req.body;
-
+        const { NoteDate } = req.body;
         console.log("the student id is: " + studentId);
         console.log("the note is: " + Note);
+        console.log("the note date is: " + NoteDate);
 
         await StudentNote.create({
             StudentID: studentId,
-            Note: Note
+            Note: Note,
+            NoteDate: NoteDate || new Date().toISOString().split('T')[0]
         });
 
-        res.redirect(`/students/${studentId}`);
+        res.redirect(`/students/${ studentId }`);
     } catch (error) {
         console.error("Error saving note:", error);
         res.status(500).json({ message: "An error occurred while saving the note" });
@@ -196,21 +122,19 @@ exports.storeNote = async(req, res) => {
 exports.storeWeightlog = async(req, res) => {
     try {
         const studentId = req.params.studentID;
-        const { Weight, Height, Date } = req.body;
+        const { Weight, WeightDate } = req.body;
 
         console.log("the student id is: " + studentId);
         console.log("the weight is: " + Weight);
-        console.log("the height is: " + Height);
-        console.log("the date is: " + Date);
+        console.log("the date is: " + WeightDate);
 
         await StudentWeightlog.create({
             StudentID: studentId,
             Weight: Weight,
-            Height: Height,
-            Date: Date
+            WeightDate: WeightDate || new Date().toISOString().split('T')[0]
         });
 
-        res.redirect(`/students/${studentId}`);
+        res.redirect(`/students/${ studentId }`);
     } catch (error) {
         console.error("Error saving weight log:", error);
         res.status(500).json({ message: "An error occurred while saving the weight log" });
@@ -220,8 +144,9 @@ exports.storeWeightlog = async(req, res) => {
 exports.storeDoc = async(req, res) => {
     try {
         const studentId = req.params.studentID;
+        console.log(req.body);
         const { DocName, DocPath } = req.body;
-
+        
         console.log("the student id is: " + studentId);
         console.log("the DocName is: " + DocName);
         console.log("the document path is: " + DocPath);
@@ -232,166 +157,27 @@ exports.storeDoc = async(req, res) => {
             DocPath: DocPath
         });
 
-        res.redirect(`/students/${studentId}`);
+        res.redirect( `/students/${studentId}`);
     } catch (error) {
         console.error("Error saving document:", error);
         res.status(500).json({ message: "An error occurred while saving the document" });
     }
 };
 
-// Get a student by ID
-// exports.getStudentById = async(req, res) => {
-//     try {
-//         const student = await Student.findByPk(req.params.id);
 
-//         if (!student) {
-//             return res.status(404).json({ error: 'Student not found.' });
-//         }
-
-//         res.status(200).json(student);
-//     } catch (error) {
-//         console.error('Error fetching student:', error);
-//         res.status(500).json({ error: 'An error occurred while fetching the student.' });
-//     }
-// };
-
-// Update a student by ID
-// exports.updateStudent = async(req, res) => {
-//     try {
-//         const { id } = req.params;
-//         const {
-//             FullName,
-//             YearOfBirth,
-//             Gender,
-//             Occupation,
-//             EducationLevel,
-//             DateOfEnrollment,
-//             ProfilePicturePath,
-//             PersonalDocumentPath,
-//             Status,
-//             Group
-//         } = req.body;
-
-//         const student = await Student.findByPk(id);
-//         if (!student) {
-//             return res.status(404).json({ error: 'Student not found.' });
-//         }
-
-//         await student.update({
-//             FullName,
-//             YearOfBirth,
-//             Gender,
-//             Occupation,
-//             EducationLevel,
-//             DateOfEnrollment,
-//             ProfilePicturePath,
-//             PersonalDocumentPath,
-//             Status,
-//             Group
-//         });
-
-//         res.status(200).json(student);
-//     } catch (error) {
-//         console.error('Error updating student:', error);
-//         res.status(500).json({ error: 'An error occurred while updating the student.' });
-//     }
-// };
-
-// Delete a student by ID
-// exports.deleteStudent = async(req, res) => {
-//     try {
-//         const student = await Student.findByPk(req.params.id);
-//         if (!student) {
-//             return res.status(404).json({ error: 'Student not found.' });
-//         }
-
-//         await student.destroy();
-//         res.status(204).json();
-//     } catch (error) {
-//         console.error('Error deleting student:', error);
-//         res.status(500).json({ error: 'An error occurred while deleting the student.' });
-//     }
-// };
-
-// ==================== Attendance Methods ==================== //
-
-// Render the Attendance Page
-exports.getAttendancePage = async(req, res) => {
-    try {
-        const students = await Student.findAll();
-        const groups = [...new Set(students.map(student => student.Group))];
-
-        // Calculate age based on the year of birth
-        const currentYear = new Date().getFullYear();
-        students.forEach(student => {
-            student.Age = currentYear - student.YearOfBirth; // Add 'Age' field to each student object
-        });
-
-        res.render('studentsAttendance', { students, groups });
-    } catch (error) {
-        console.error('Error fetching students for attendance:', error);
-        res.status(500).json({ error: 'An error occurred while fetching students for attendance.' });
-    }
-};
-
-// Handle Attendance Submission
-exports.submitAttendance = async(req, res) => {
-    try {
-        let { attendance } = req.body; // Get attendance data from the form
-        const currentDate = new Date(); // Get current date
-        let groupName = req.body.groupName; // Get the group name
-        console.log("the attendance is: ");
-        console.log(attendance);
-        attendance = attendance.map(item => Array.isArray(item) ? 'present' : item);
-        console.log("the attendance now is: ");
-        console.log(attendance);
-        console.log("the group name is: " + groupName);
-
-
-        // Find all students in the system
-        const allStudents = await Student.findAll({
-            where: {
-                Group: groupName
-            }
-        });
-        let count = 0;
-        // Iterate over all students to record attendance
-        for (const student of allStudents) {
-            console.log("the count is: " + count);
-
-            const studentID = student.StudentID;
-            const isPresent = attendance[count];
-            console.log("the student id is: " + studentID);
-            console.log("the isPresent is: ");
-            console.log(isPresent === "present" ? "present" : "absent");
-
-            // Record attendance as 'present' or 'absent' based on checkbox value
-            await Attendance.create({
-                StudentID: studentID,
-                Date: currentDate,
-                AttendanceStatus: isPresent === 'present' ? 'present' : 'absent'
-            });
-            count++;
-        }
-        // Redirect to a success or confirmation page after attendance is submitted
-        res.send('success');
-    } catch (error) {
-        console.error('Error submitting attendance:', error);
-        res.status(500).send('Error submitting attendance');
-    }
-};
-
-
-// Render Attendance Success Page
-exports.getAttendanceSuccess = (req, res) => {
-    res.send('attendanceSuccess'); // Ensure you have an EJS view named 'attendanceSuccess.ejs'
-};
-
-exports.showStudent = async(req, res) => {
+exports.showStudent = async (req, res) => {
     try {
         const studentID = req.params.studentID;
+        
+        // Get the requested month and year from query params (default to current month and year)
+        const month = parseInt(req.query.month) || new Date().getMonth() + 1; // Months are 0-indexed in JS
+        const year = parseInt(req.query.year) || new Date().getFullYear();
 
-        // Find student and include related data
+        // Calculate start and end dates for the month
+        const startDate = new Date(year, month - 1, 1); // Start of the month
+        const endDate = new Date(year, month, 0); // End of the month
+
+        // Find student and related data
         const student = await Student.findByPk(studentID, {
             include: [
                 { model: StudentDoc, as: 'StudentDocs' },
@@ -405,15 +191,41 @@ exports.showStudent = async(req, res) => {
             return res.status(404).json({ error: 'Student not found.' });
         }
 
-        // Fetch attendance records for the student
+        // Fetch attendance records for the student, filtered by the selected month and year
         const attendanceRecords = await Attendance.findAll({
-            where: { StudentID: studentID },
-            order: [
-                ['Date', 'DESC']
-            ]
+            where: {
+                StudentID: studentID,
+                AttendanceDate: {
+                    [Op.between]: [startDate, endDate]
+                }
+            },
+            order: [['AttendanceDate', 'DESC']]
         });
 
-        res.render('students/show', { student, attendanceRecords });
+        // Fetch corresponding attendance notes
+        const attendanceNoteRecords = await AttendanceNote.findAll({
+            where: { AttendanceID: attendanceRecords.map(record => record.AttendanceID) }
+        });
+
+        // Payment records (you already have pagination logic for payments)
+        const { count: totalPayments, rows: paymentRecords } = await Payment.findAndCountAll({
+            where: { StudentID: studentID },
+            order: [['PaymentDate', 'DESC']],
+            limit: 12,
+            offset: (parseInt(req.query.page || 1) - 1) * 12
+        });
+
+        const totalPages = Math.ceil(totalPayments / 12);
+
+        res.render('students/show', {
+            student,
+            attendanceRecords,
+            attendanceNoteRecords,
+            paymentRecords,
+            currentPage: month,
+            totalPages,
+            year
+        });
     } catch (error) {
         console.error('Error fetching student details:', error);
         res.status(500).json({ error: 'An error occurred while fetching student details.' });

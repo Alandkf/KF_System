@@ -1,6 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const { all } = require('../app');
+// const { all } = require('../app');
 
 const Student = sequelize.define('Student', {
     StudentID: {
@@ -23,12 +23,16 @@ const Student = sequelize.define('Student', {
         type: DataTypes.ENUM('male', 'female'), // Consistent case for values
         allowNull: false
     },
+    Address: {
+        type: DataTypes.STRING(100), // Reduced length to 50
+        allowNull: false
+    },
     Occupation: {
-        type: DataTypes.STRING(50), // Reduced length to 30
+        type: DataTypes.STRING(50), 
         allowNull: true
     },
-    EducationLevel: {
-        type: DataTypes.STRING(50), // Reduced length to 30
+    EducationLevel: {   
+        type: DataTypes.STRING(50), 
         allowNull: true
     },
     DateOfEnrollment: {
@@ -41,12 +45,13 @@ const Student = sequelize.define('Student', {
         defaultValue: 'active',
         allowNull: false
     },
-    Group: {
+    GroupName: {
         type: DataTypes.STRING(50),
         allowNull: false
     }
 }, {
-    timestamps: true, // Added for tracking
+    timestamps: false, // Added for tracking
 });
-
+console.log("====================================");
+console.log("here is student model and exported");
 module.exports = Student;

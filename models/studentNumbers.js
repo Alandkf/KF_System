@@ -29,7 +29,9 @@ const StudentNumber = sequelize.define('StudentNumber', {
         UNSIGNED: true
     }
 }, {
-    timestamps: true  // Timestamps added
+    timestamps: false  // Timestamps added
 });
+console.log("====================================");
+console.log("here is student number model and exported");
 
 module.exports = StudentNumber;

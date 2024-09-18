@@ -1,38 +1,33 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db');
-const Student = require('./student');
+const Payment = require('./payment');
 
-const StudentNote = sequelize.define('StudentNote', {
-    NoteID: {
+const PaymentNote = sequelize.define('PaymentNote', {
+    PaymentNoteID: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         UNSIGNED: true,
         allowNull: false
     },
-    StudentID: {
+    PaymentID: {
         type: DataTypes.INTEGER,
         references: {
-            model: Student,
-            key: 'StudentID',
+            model: Payment,
+            key: 'PaymentID',
             UNSIGNED: true
         },
         allowNull: false,
         UNSIGNED: true
     },
-    Note: {
+    PaymentNote: {
         type: DataTypes.TEXT,
         allowNull: false,
-    },
-    NoteDate: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-        defaultValue: DataTypes.NOW
     }
 }, {
     timestamps: false  // Timestamps added
 });
 console.log("====================================");
-console.log("here is student note model and exported");
+console.log("here is payment note model and exported");
 
-module.exports = StudentNote;
+module.exports = PaymentNote;
